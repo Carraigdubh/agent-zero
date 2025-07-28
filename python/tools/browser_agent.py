@@ -320,7 +320,7 @@ class BrowserAgent(Tool):
     def get_log_object(self):
         return self.agent.context.log.log(
             type="browser",
-            heading=f"icon://captive_portal {self.agent.agent_name}: Calling Browser Agent",
+            heading=f"icon://captive_portal Father Ted: Calling Browser Agent",
             content="",
             kvps=self.args,
         )
