@@ -1762,10 +1762,11 @@ a:active {
   background-color: #e6e6e6;
 }
 
-.light-mode #logo-container img {
+/* Removed filter mask that was inverting/grayscaling logo in light mode */
+/*.light-mode #logo-container img {
   -webkit-filter: invert(100%) grayscale(100%);
   filter: invert(100%) grayscale(100%);
-}
+}*/
 
 .light-mode .extension {
   background: var(--color-primary);
