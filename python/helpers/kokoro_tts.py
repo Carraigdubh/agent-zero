@@ -11,8 +11,8 @@ from python.helpers.print_style import PrintStyle
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 _pipeline = None
-_voice = "am_puck,am_onyx"
-_speed = 1.1
+_voice = "am_adam"  # Male voice for Father Ted
+_speed = 0.95  # Slightly slower for clerical tone
 is_updating_model = False
 
 

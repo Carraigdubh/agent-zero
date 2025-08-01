@@ -72,6 +72,9 @@ class Settings(TypedDict):
     stt_waiting_timeout: int
 
     tts_kokoro: bool
+    tts_provider: str  # kokoro or coqui
+    tts_coqui_model: str
+    tts_coqui_voice_sample: str
 
     mcp_servers: str
     mcp_client_init_timeout: int
@@ -715,6 +718,40 @@ def convert_out(settings: Settings) -> SettingsOutput:
             "value": settings["tts_kokoro"],
         }
     )
+    
+    tts_fields.append(
+        {
+            "id": "tts_provider",
+            "title": "TTS Provider",
+            "description": "Choose between Kokoro (fast, pre-built voices) or Coqui (voice cloning capable)",
+            "type": "select",
+            "value": settings["tts_provider"],
+            "options": [
+                {"value": "kokoro", "label": "Kokoro TTS"},
+                {"value": "coqui", "label": "Coqui TTS"}
+            ]
+        }
+    )
+    
+    tts_fields.append(
+        {
+            "id": "tts_coqui_model",
+            "title": "Coqui TTS Model",
+            "description": "Model to use for Coqui TTS (e.g., tts_models/en/ljspeech/tacotron2-DDC)",
+            "type": "text",
+            "value": settings["tts_coqui_model"],
+        }
+    )
+    
+    tts_fields.append(
+        {
+            "id": "tts_coqui_voice_sample",
+            "title": "Coqui Voice Sample Path",
+            "description": "Path to audio file for voice cloning (leave empty for default voice)",
+            "type": "text",
+            "value": settings["tts_coqui_voice_sample"],
+        }
+    )
 
     speech_section: SettingsSection = {
         "id": "speech",
@@ -1042,6 +1079,9 @@ def get_default_settings() -> Settings:
         stt_silence_duration=1000,
         stt_waiting_timeout=2000,
         tts_kokoro=True,
+        tts_provider="kokoro",  # default to kokoro, can be changed to "coqui"
+        tts_coqui_model="tts_models/en/ljspeech/tacotron2-DDC",
+        tts_coqui_voice_sample="",  # path to voice sample for cloning
         mcp_servers='{\n    "mcpServers": {}\n}',
         mcp_client_init_timeout=10,
         mcp_client_tool_timeout=120,

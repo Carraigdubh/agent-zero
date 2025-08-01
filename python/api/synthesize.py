@@ -2,7 +2,7 @@
 
 from python.helpers.api import ApiHandler, Request, Response
 
-from python.helpers import runtime, settings, kokoro_tts
+from python.helpers import settings, kokoro_tts, coqui_tts
 
 class Synthesize(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
@@ -10,29 +10,33 @@ class Synthesize(ApiHandler):
         ctxid = input.get("ctxid", "")
         
         context = self.get_context(ctxid)
-        if not await kokoro_tts.is_downloaded():
-            context.log.log(type="info", content="Kokoro TTS model is currently being initialized, please wait...")
-
+        
+        # Get TTS settings
+        set = settings.get_settings()
+        tts_provider = set.get("tts_provider", "kokoro")
+        
         try:
-            # # Clean and chunk text for long responses
-            # cleaned_text = self._clean_text(text)
-            # chunks = self._chunk_text(cleaned_text)
-            
-            # if len(chunks) == 1:
-            #     # Single chunk - return as before
-            #     audio = await kokoro_tts.synthesize_sentences(chunks)
-            #     return {"audio": audio, "success": True}
-            # else:
-            #     # Multiple chunks - return as sequence
-            #     audio_parts = []
-            #     for chunk in chunks:
-            #         chunk_audio = await kokoro_tts.synthesize_sentences([chunk])
-            #         audio_parts.append(chunk_audio)
-            #     return {"audio_parts": audio_parts, "success": True}
-
-            # audio is chunked on the frontend for better flow
-            audio = await kokoro_tts.synthesize_sentences([text])
-            return {"audio": audio, "success": True}
+            if tts_provider == "coqui":
+                # Use Coqui TTS
+                if not await coqui_tts.is_downloaded():
+                    context.log.log(type="info", content="Coqui TTS model is currently being initialized, please wait...")
+                
+                # Configure Coqui with settings
+                if set.get("tts_coqui_voice_sample"):
+                    coqui_tts.set_voice_clone(set["tts_coqui_voice_sample"])
+                if set.get("tts_coqui_model"):
+                    coqui_tts.set_voice_model(set["tts_coqui_model"])
+                
+                audio = await coqui_tts.synthesize_sentences([text])
+                return {"audio": audio, "success": True}
+            else:
+                # Use Kokoro TTS (default)
+                if not await kokoro_tts.is_downloaded():
+                    context.log.log(type="info", content="Kokoro TTS model is currently being initialized, please wait...")
+                
+                audio = await kokoro_tts.synthesize_sentences([text])
+                return {"audio": audio, "success": True}
+                
         except Exception as e:
             return {"error": str(e), "success": False}
     

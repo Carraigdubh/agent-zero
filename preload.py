@@ -1,7 +1,7 @@
 import asyncio
 from python.helpers import runtime, whisper, settings
 from python.helpers.print_style import PrintStyle
-from python.helpers import kokoro_tts
+from python.helpers import kokoro_tts, coqui_tts
 import models
 
 
@@ -29,9 +29,22 @@ async def preload():
                 except Exception as e:
                     PrintStyle().error(f"Error in preload_embedding: {e}")
 
-        # preload kokoro tts model if enabled
-        async def preload_kokoro():
-            if set["tts_kokoro"]:
+        # preload TTS model based on provider
+        async def preload_tts():
+            tts_provider = set.get("tts_provider", "kokoro")
+            
+            if tts_provider == "coqui":
+                try:
+                    PrintStyle().print("Preloading Coqui TTS...")
+                    # Configure Coqui with settings
+                    if set.get("tts_coqui_voice_sample"):
+                        coqui_tts.set_voice_clone(set["tts_coqui_voice_sample"])
+                    if set.get("tts_coqui_model"):
+                        coqui_tts.set_voice_model(set["tts_coqui_model"])
+                    return await coqui_tts.preload()
+                except Exception as e:
+                    PrintStyle().error(f"Error in preload_coqui: {e}")
+            elif set["tts_kokoro"]:
                 try:
                     return await kokoro_tts.preload()
                 except Exception as e:
@@ -41,7 +54,7 @@ async def preload():
         tasks = [
             preload_embedding(),
             preload_whisper(),
-            preload_kokoro()
+            preload_tts()
         ]
 
         await asyncio.gather(*tasks, return_exceptions=True)
