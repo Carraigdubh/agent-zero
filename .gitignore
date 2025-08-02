@@ -12,6 +12,8 @@
 
 # Ignore all contents of the virtual environment directory
 .venv/
+agent-zero-env/
+*-env/
 
 # Handle memory directory
 memory/**
@@ -40,3 +42,5 @@ instruments/**
 # Global rule to include .gitkeep files anywhere
 !**/.gitkeep
 agent_history.gif
+.roo/mcp.json
+.gitignore

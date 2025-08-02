@@ -111,3 +111,18 @@ When changing agent identity (e.g., from "Agent Zero" to "Father Ted"):
 5. **Restart server** to apply all changes with fresh context
 
 **Critical**: External LLMs (Google, OpenAI, etc.) have no inherent knowledge of "Agent Zero" - if they respond with that identity, it's because the conversation history contains previous responses with that identity being sent as context.
+
+### Docker/Production Deployment Identity Issues
+
+**Key Learning**: When deploying identity changes to Docker/production environments:
+
+- **Code changes deploy correctly** - Docker builds pull the right repository and include all prompt/personality changes
+- **Persistent data is the problem** - Conversation history (`/tmp/chats/`) and agent memory (`/memory/default/`) persist between deployments
+- **Symptoms**: New code is running but agent still uses old identity because old conversations are loaded as context
+- **Solution**: Clear persistent storage in production:
+  ```bash
+  rm -rf /tmp/chats/*
+  rm -rf /memory/default/*
+  ```
+- **Prevention**: Always clear these directories when making identity changes, both locally and in production
+- **Docker volumes**: If using persistent volumes, they may need to be deleted and recreated for identity changes
